@@ -130,21 +130,26 @@ def _find_ico():
 
 
 def set_window_icon(window):
-    ico = _find_ico()
-    if ico:
+    def _apply():
+        ico = _find_ico()
+        if ico:
+            try:
+                window.iconbitmap(ico)
+            except Exception:
+                pass
         try:
-            window.iconbitmap(ico)
-            return
+            img = load_icon_image(64)
+            from PIL import ImageTk
+            photo = ImageTk.PhotoImage(img)
+            window.iconphoto(True, photo)
+            window._icon_ref = photo
         except Exception:
             pass
-    try:
-        img = load_icon_image(64)
-        from PIL import ImageTk
-        photo = ImageTk.PhotoImage(img)
-        window.iconphoto(True, photo)
-        window._icon_ref = photo
-    except Exception:
-        pass
+    # Apply immediately and also after a delay to override CustomTkinter's
+    # default feather icon which it sets via after() callbacks.
+    _apply()
+    window.after(50, _apply)
+    window.after(200, _apply)
 
 
 def force_center(window, w, h):
